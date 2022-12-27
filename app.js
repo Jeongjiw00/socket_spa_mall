@@ -4,11 +4,9 @@ const jwt = require("jsonwebtoken");
 const { User, Cart, Goods } = require("./models");
 const authMiddleware = require("./middlewares/auth-middleware");
 const { Server } = require("http");
-const socketIo = require("socket.io");
 
 const app = express();
 const http = Server(app);
-const io = socketIo(http);
 const router = express.Router();
 
 app.use(express.static("assets"));
@@ -216,28 +214,4 @@ router.post("/goods", async (req, res) => {
 
 app.use("/api", express.urlencoded({ extended: false }), router);
 
-io.on("connection", (sock) => {
-  console.log("새로운 소켓이 연결되었습니다.");
-
-  sock.on("BUY", (data) => {
-    console.log(data);
-    const emitDate = {
-      nickname: data.nickname,
-      goodsId: data.goodsId,
-      goodsName: data.goodsName,
-      date: new Date().toISOString(),
-      //string으로 date타입을 보여줄수있도록
-    };
-    //io.emit하면 소켓이 연결된 모든 사용자들에게 이벤트로 데이터가 전달됨
-    //sock.emit하면 로그인으로 연결된 사용자 1명에게만 전달
-    io.emit("BUY_GOODS", emitDate);
-  });
-
-  sock.on("disconnect", () => {
-    console.log(sock.id, "해당하는 사용자가 연결이 끊어졌어요!");
-  });
-});
-
-http.listen(8080, () => {
-  console.log("서버가 요청을 받을 준비가 됐어요");
-});
+module.exports = http;
